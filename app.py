@@ -6,7 +6,7 @@ from google import genai
 # Page Configuration
 st.set_page_config(page_title="AI Case Championship Solver", page_icon="🎓", layout="wide")
 
-st.title("🎓 منصة الحل والتعديل الذكي - Aramco Case Championship")
+st.title("🎓 منصة حل الكيسات والتعديل الذكي - Aramco Case Championship")
 st.write("رفع الملفات ➔ تحليل شامل باللغة الإنجليزية 100% ➔ معاينة التقرير ➔ تعديلات مخصصة.")
 
 # Session State Management
@@ -34,7 +34,6 @@ if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
     else:
         with st.spinner("Analyzing data exhibits, applying Q&A rules, and generating full English solution..."):
             try:
-                # Initialize official Client
                 client = genai.Client(api_key=api_key.strip())
                 
                 # Read Excel File Exhibits
@@ -65,11 +64,17 @@ if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
                 Format: Output each slide with a clear Header (e.g., "Slide X: Title"), Bullet Points, Key Figures, Data Sources, and Strategic Rationale.
                 """
                 
-                # Call Gemini API with updated model
-                response = client.models.generate_content(
-                    model='gemini-3.8-flash',
-                    contents=prompt,
-                )
+                # Try primary model, fallback to secondary if busy (503)
+                try:
+                    response = client.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=prompt,
+                    )
+                except Exception:
+                    response = client.models.generate_content(
+                        model='gemini-1.5-flash',
+                        contents=prompt,
+                    )
                 
                 st.session_state.full_solution = response.text
                 st.session_state.solution_generated = True
@@ -110,10 +115,16 @@ if st.session_state.solution_generated:
                     "{user_edits}"
                     """
                     
-                    updated_response = client.models.generate_content(
-                        model='gemini-3.8-flash',
-                        contents=edit_prompt,
-                    )
+                    try:
+                        updated_response = client.models.generate_content(
+                            model='gemini-2.5-flash',
+                            contents=edit_prompt,
+                        )
+                    except Exception:
+                        updated_response = client.models.generate_content(
+                            model='gemini-1.5-flash',
+                            contents=edit_prompt,
+                        )
                     
                     st.session_state.full_solution = updated_response.text
                     st.success("✅ Solution updated in English while preserving structure!")
