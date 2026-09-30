@@ -12,11 +12,11 @@ st.write("رفع الملفات ➔ تحليل شامل باللغة الإنج�
 
 # Session State Management
 if 'solution_generated' not in st.session_state:
-st.session_state.solution_generated = False
+    st.session_state.solution_generated = False
 if 'full_solution' not in st.session_state:
-st.session_state.full_solution = ""
+    st.session_state.full_solution = ""
 if 'excel_data' not in st.session_state:
-st.session_state.excel_data = None
+    st.session_state.excel_data = None
 
 # Sidebar Inputs
 st.sidebar.header("⚙️ 1. File Inputs & Settings")
