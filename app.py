@@ -79,7 +79,7 @@ if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
                 """
                 
                 response = client.models.generate_content(
-                    model='gemini-3.8-flash',
+                    model='gemini-2.5-flash',
                     contents=prompt,
                 )
                 
@@ -123,7 +123,7 @@ if st.session_state.solution_generated:
                     """
                     
                     updated_response = client.models.generate_content(
-                        model='gemini-3.8-flash',
+                        model='gemini-2.5-flash',
                         contents=edit_prompt,
                     )
                     
