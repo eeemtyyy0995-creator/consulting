@@ -6,7 +6,7 @@ import google.generativeai as genai
 # Page Configuration
 st.set_page_config(page_title="AI Case Championship Solver", page_icon="🎓", layout="wide")
 
-st.title("🎓 منصة حل الكيسات والتعديل الذكي - Aramco Case Championship")
+st.title("🎓 منصة الحل والتعديل الذكي - Aramco Case Championship")
 st.write("رفع الملفات ➔ تحليل شامل باللغة الإنجليزية 100% ➔ معاينة التقرير ➔ تعديلات مخصصة.")
 
 # Session State Management
