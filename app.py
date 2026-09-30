@@ -31,19 +31,19 @@ api_key = st.sidebar.text_input("Gemini API Key:", type="password")
 # Process & Generate Solution
 if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
     if not uploaded_excel or not uploaded_pdf or not api_key:
-st.error("⚠️ Please upload both Excel data and PDF instructions, and provide a valid Gemini API Key!")
-else:
-with st.spinner("Analyzing data exhibits, applying Q&A rules, and generating full English solution..."):
-genai.configure(api_key=api_key)
+    st.error("⚠️ Please upload both Excel data and PDF instructions, and provide a valid Gemini API Key!")
+    else:
+        with st.spinner("Analyzing data exhibits, applying Q&A rules, and generating full English solution..."):
+            genai.configure(api_key=api_key)
 
-# Read Excel File Exhibits
-xls = pd.ExcelFile(uploaded_excel)
-sheets_summary = ""
-for sheet in xls.sheet_names:
-df = pd.read_excel(uploaded_excel, sheet_name=sheet)
-sheets_summary += f"\n--- Sheet: {sheet} ---\n" + df.head(5).to_string()
+                 # Read Excel File Exhibits
+                xls = pd.ExcelFile(uploaded_excel)
+                sheets_summary = ""
+                for sheet in xls.sheet_names:
+                    df = pd.read_excel(uploaded_excel, sheet_name=sheet)
+                    sheets_summary += f"\n--- Sheet: {sheet} ---\n" + df.head(5).to_string()
 
-st.session_state.excel_data = uploaded_excel
+                 st.session_state.excel_data = uploaded_excel
 
 # AI Prompt tailored for strictly English outputs matching Q&A constraints
 prompt = f"""
