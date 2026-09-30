@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import openpyxl
 from google import genai
+from fpdf import FPDF
 
 # Page Configuration
 st.set_page_config(page_title="AI Case Championship Solver", page_icon="🎓", layout="wide")
@@ -121,19 +122,32 @@ if st.session_state.solution_generated:
                 except Exception as e:
                     st.error(f"❌ Error occurred: {str(e)}")
 
-    # Download Section
-    st.markdown("---")
-    st.subheader("📥 Export Final Deliverables")
+   # Download Section
+st.markdown("---")
+st.subheader("📥 Export Final Deliverables")
+
+def create_pdf(text_content):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.set_font("Helvetica", size=11)
     
-    report_bytes = st.session_state.full_solution.encode('utf-8')
+    for line in text_content.split('\n'):
+        clean_line = line.encode('latin-1', 'replace').decode('latin-1')
+        pdf.multi_cell(0, 8, txt=clean_line)
+    
+    return bytes(pdf.output())
+
+if st.session_state.solution_generated:
+    pdf_bytes = create_pdf(st.session_state.full_solution)
     
     col1, col2 = st.columns(2)
     with col1:
         st.download_button(
-            label="📄 Download Slides Solution (.md / .txt)",
-            data=report_bytes,
-            file_name="Aramco_Case_Final_Slides_Solution_EN.md",
-            mime="text/markdown"
+            label="📄 Download Slides Solution (.pdf)",
+            data=pdf_bytes,
+            file_name="Aramco_Case_Final_Slides_Solution_EN.pdf",
+            mime="application/pdf"
         )
     with col2:
         if st.session_state.excel_data:
