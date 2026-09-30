@@ -19,7 +19,7 @@ if 'excel_data' not in st.session_state:
     st.session_state.excel_data = None
 
 # Sidebar Inputs
-st.sidebar.header("⚙️️ 1. File Inputs & Settings")
+st.sidebar.header("⚙️ 1. File Inputs & Settings")
 
 uploaded_excel = st.sidebar.file_uploader("Upload Case Data (Excel)", type=["xlsx", "xls"])
 uploaded_pdf = st.sidebar.file_uploader("Upload Instructions / Q&A (PDF)", type=["pdf"])
@@ -35,7 +35,7 @@ if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
     else:
         with st.spinner("Analyzing data exhibits, applying Q&A rules, and generating full English solution..."):
             try:
-                genai.configure(api_key=api_key)
+                genai.configure(api_key=api_key.strip())
                 
                 # Read Excel File Exhibits
                 xls = pd.ExcelFile(uploaded_excel)
@@ -65,9 +65,13 @@ if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
                 Format: Output each slide with a clear Header (e.g., "Slide X: Title"), Bullet Points, Key Figures, Data Sources, and Strategic Rationale.
                 """
                 
-                # Using standard stable model
-                model = genai.GenerativeModel('gemini-1.5-flash')
-                response = model.generate_content(prompt)
+                # Model selection with fallback
+                try:
+                    model = genai.GenerativeModel('gemini-1.5-flash-latest')
+                    response = model.generate_content(prompt)
+                except Exception:
+                    model = genai.GenerativeModel('gemini-pro')
+                    response = model.generate_content(prompt)
                 
                 st.session_state.full_solution = response.text
                 st.session_state.solution_generated = True
@@ -92,7 +96,7 @@ if st.session_state.solution_generated:
         if user_edits:
             with st.spinner("Applying requested edit while preserving full slide deck structure..."):
                 try:
-                    genai.configure(api_key=api_key)
+                    genai.configure(api_key=api_key.strip())
                     
                     edit_prompt = f"""
                     You are a senior consulting editor. Update the following slide deck based on the user's specific feedback.
@@ -109,8 +113,12 @@ if st.session_state.solution_generated:
                     "{user_edits}"
                     """
                     
-                    model = genai.GenerativeModel('gemini-1.5-flash')
-                    updated_response = model.generate_content(edit_prompt)
+                    try:
+                        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+                        updated_response = model.generate_content(edit_prompt)
+                    except Exception:
+                        model = genai.GenerativeModel('gemini-pro')
+                        updated_response = model.generate_content(edit_prompt)
                     
                     st.session_state.full_solution = updated_response.text
                     st.success("✅ Solution updated in English while preserving structure!")
