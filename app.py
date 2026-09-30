@@ -34,7 +34,6 @@ if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
     else:
         with st.spinner("Analyzing data exhibits, applying Q&A rules, and generating full English solution..."):
             try:
-                # Configure API Key
                 clean_api_key = api_key.strip()
                 genai.configure(api_key=clean_api_key)
                 
@@ -66,9 +65,13 @@ if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
                 Format: Output each slide with a clear Header (e.g., "Slide X: Title"), Bullet Points, Key Figures, Data Sources, and Strategic Rationale.
                 """
                 
-                # Initialize model using gemini-1.5-flash
-                model = genai.GenerativeModel('gemini-1.5-flash')
-                response = model.generate_content(prompt)
+                # Try generating with updated model string
+                try:
+                    model = genai.GenerativeModel('models/gemini-1.5-flash')
+                    response = model.generate_content(prompt)
+                except Exception:
+                    model = genai.GenerativeModel('models/gemini-1.5-pro')
+                    response = model.generate_content(prompt)
                 
                 st.session_state.full_solution = response.text
                 st.session_state.solution_generated = True
@@ -80,11 +83,10 @@ if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
 if st.session_state.solution_generated:
     st.subheader("📋 Final Slide Deck Draft Review (English)")
     
-    # Display Generated Solution
     st.markdown(st.session_state.full_solution)
     
     st.markdown("---")
-    st.subheader("🛠️️ Targeted Edits / Modifications")
+    st.subheader("🛠️ Targeted Edits / Modifications")
     st.info("💡 Enter your specific edit request below in Arabic or English.")
     
     user_edits = st.text_area("Specify your edits here:")
@@ -111,8 +113,12 @@ if st.session_state.solution_generated:
                     "{user_edits}"
                     """
                     
-                    model = genai.GenerativeModel('gemini-1.5-flash')
-                    updated_response = model.generate_content(edit_prompt)
+                    try:
+                        model = genai.GenerativeModel('models/gemini-1.5-flash')
+                        updated_response = model.generate_content(edit_prompt)
+                    except Exception:
+                        model = genai.GenerativeModel('models/gemini-1.5-pro')
+                        updated_response = model.generate_content(edit_prompt)
                     
                     st.session_state.full_solution = updated_response.text
                     st.success("✅ Solution updated in English while preserving structure!")
