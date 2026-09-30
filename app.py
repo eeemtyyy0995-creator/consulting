@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import openpyxl
-from io import BytesIO
 import google.generativeai as genai
 
 # Page Configuration
@@ -35,7 +34,9 @@ if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
     else:
         with st.spinner("Analyzing data exhibits, applying Q&A rules, and generating full English solution..."):
             try:
-                genai.configure(api_key=api_key.strip())
+                # Configure API Key
+                clean_api_key = api_key.strip()
+                genai.configure(api_key=clean_api_key)
                 
                 # Read Excel File Exhibits
                 xls = pd.ExcelFile(uploaded_excel)
@@ -65,13 +66,9 @@ if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
                 Format: Output each slide with a clear Header (e.g., "Slide X: Title"), Bullet Points, Key Figures, Data Sources, and Strategic Rationale.
                 """
                 
-                # Model selection with fallback
-                try:
-                    model = genai.GenerativeModel('gemini-1.5-flash-latest')
-                    response = model.generate_content(prompt)
-                except Exception:
-                    model = genai.GenerativeModel('gemini-pro')
-                    response = model.generate_content(prompt)
+                # Initialize model using gemini-1.5-flash
+                model = genai.GenerativeModel('gemini-1.5-flash')
+                response = model.generate_content(prompt)
                 
                 st.session_state.full_solution = response.text
                 st.session_state.solution_generated = True
@@ -87,7 +84,7 @@ if st.session_state.solution_generated:
     st.markdown(st.session_state.full_solution)
     
     st.markdown("---")
-    st.subheader("🛠️ Targeted Edits / Modifications")
+    st.subheader("🛠️️ Targeted Edits / Modifications")
     st.info("💡 Enter your specific edit request below in Arabic or English.")
     
     user_edits = st.text_area("Specify your edits here:")
@@ -96,7 +93,8 @@ if st.session_state.solution_generated:
         if user_edits:
             with st.spinner("Applying requested edit while preserving full slide deck structure..."):
                 try:
-                    genai.configure(api_key=api_key.strip())
+                    clean_api_key = api_key.strip()
+                    genai.configure(api_key=clean_api_key)
                     
                     edit_prompt = f"""
                     You are a senior consulting editor. Update the following slide deck based on the user's specific feedback.
@@ -113,12 +111,8 @@ if st.session_state.solution_generated:
                     "{user_edits}"
                     """
                     
-                    try:
-                        model = genai.GenerativeModel('gemini-1.5-flash-latest')
-                        updated_response = model.generate_content(edit_prompt)
-                    except Exception:
-                        model = genai.GenerativeModel('gemini-pro')
-                        updated_response = model.generate_content(edit_prompt)
+                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    updated_response = model.generate_content(edit_prompt)
                     
                     st.session_state.full_solution = updated_response.text
                     st.success("✅ Solution updated in English while preserving structure!")
