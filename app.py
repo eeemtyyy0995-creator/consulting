@@ -31,18 +31,36 @@ def create_pdf(text_content):
     
     return bytes(pdf.output())
 
-# Helper Function: Generate Content using official google-genai SDK
+# Helper Function: Dynamic Model Resolution to absolute 404 Prevention
 def generate_with_sdk(api_key, prompt):
     client = genai.Client(api_key=api_key.strip())
     
-    models_to_try = [
-        'gemini-2.5-flash',
+    # 1. البحث الديناميكي عن أحدث موديل متاح في حسابك
+    selected_model = None
+    try:
+        for m in client.models.list():
+            model_name = getattr(m, 'name', '') or str(m)
+            if 'flash' in model_name or 'pro' in model_name:
+                selected_model = model_name
+                break
+    except Exception:
+        pass
+
+    # 2. قائمة احتياطية بأسماء الموديلات الدقيقة للنسخ المحدثة
+    fallback_models = [
+        selected_model,
         'gemini-2.0-flash',
-        'gemini-1.5-flash'
+        'gemini-1.5-flash-latest',
+        'gemini-1.5-pro-latest',
+        'gemini-1.5-flash',
+        'gemini-2.5-flash'
     ]
     
+    # تنظيف القائمة من القيم الفارغة
+    candidate_models = [m for m in fallback_models if m]
+    
     last_err = None
-    for model_name in models_to_try:
+    for model_name in candidate_models:
         try:
             response = client.models.generate_content(
                 model=model_name,
@@ -54,7 +72,7 @@ def generate_with_sdk(api_key, prompt):
             last_err = e
             continue
             
-    raise Exception(f"تعذر استدعاء SDK. التفاصيل: {str(last_err)}")
+    raise Exception(f"تعذر استدعاء SDK. الخطأ: {str(last_err)}")
 
 # Sidebar Inputs
 st.sidebar.header("⚙️ 1. File Inputs & Settings")
