@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import openpyxl
-from google import genai
+import google.generativeai as genai
 from fpdf import FPDF
 
 # Page Configuration
@@ -48,7 +48,9 @@ if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
     else:
         with st.spinner("Analyzing data exhibits, applying Q&A rules, and generating full English solution..."):
             try:
-                client = genai.Client(api_key=api_key.strip())
+                # Configure Official API Key
+                genai.configure(api_key=api_key.strip())
+                model = genai.GenerativeModel('gemini-1.5-flash')
                 
                 # Read Excel File Exhibits
                 xls = pd.ExcelFile(uploaded_excel)
@@ -78,10 +80,7 @@ if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
                 Format: Output each slide with a clear Header (e.g., "Slide X: Title"), Bullet Points, Key Figures, Data Sources, and Strategic Rationale.
                 """
                 
-                response = client.models.generate_content(
-                    model='gemini-1.5-flash',
-                    contents=prompt,
-                )
+                response = model.generate_content(prompt)
                 
                 st.session_state.full_solution = response.text
                 st.session_state.solution_generated = True
@@ -105,7 +104,8 @@ if st.session_state.solution_generated:
         if user_edits:
             with st.spinner("Applying requested edit while preserving full slide deck structure..."):
                 try:
-                    client = genai.Client(api_key=api_key.strip())
+                    genai.configure(api_key=api_key.strip())
+                    model = genai.GenerativeModel('gemini-1.5-flash')
                     
                     edit_prompt = f"""
                     You are a senior consulting editor. Update the following slide deck based on the user's specific feedback.
@@ -122,10 +122,7 @@ if st.session_state.solution_generated:
                     "{user_edits}"
                     """
                     
-                    updated_response = client.models.generate_content(
-                        model='gemini-1.5-flash',
-                        contents=edit_prompt,
-                    )
+                    updated_response = model.generate_content(edit_prompt)
                     
                     st.session_state.full_solution = updated_response.text
                     st.success("✅ Solution updated in English while preserving structure!")
