@@ -1,12 +1,12 @@
 import streamlit as st
 import pandas as pd
 import openpyxl
-import google.generativeai as genai
+from google import genai
 
 # Page Configuration
 st.set_page_config(page_title="AI Case Championship Solver", page_icon="🎓", layout="wide")
 
-st.title("🎓 منصة الحل والتعديل الذكي - Aramco Case Championship")
+st.title(" منصة الحل والتعديل الذكي - Aramco Case Championship")
 st.write("رفع الملفات ➔ تحليل شامل باللغة الإنجليزية 100% ➔ معاينة التقرير ➔ تعديلات مخصصة.")
 
 # Session State Management
@@ -34,8 +34,8 @@ if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
     else:
         with st.spinner("Analyzing data exhibits, applying Q&A rules, and generating full English solution..."):
             try:
-                clean_api_key = api_key.strip()
-                genai.configure(api_key=clean_api_key)
+                # Initialize new official Client
+                client = genai.Client(api_key=api_key.strip())
                 
                 # Read Excel File Exhibits
                 xls = pd.ExcelFile(uploaded_excel)
@@ -65,13 +65,11 @@ if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
                 Format: Output each slide with a clear Header (e.g., "Slide X: Title"), Bullet Points, Key Figures, Data Sources, and Strategic Rationale.
                 """
                 
-                # Try generating with updated model string
-                try:
-                    model = genai.GenerativeModel('models/gemini-1.5-flash')
-                    response = model.generate_content(prompt)
-                except Exception:
-                    model = genai.GenerativeModel('models/gemini-1.5-pro')
-                    response = model.generate_content(prompt)
+                # Call Gemini API with official client
+                response = client.models.generate_content(
+                    model='gemini-2.5-flash',
+                    contents=prompt,
+                )
                 
                 st.session_state.full_solution = response.text
                 st.session_state.solution_generated = True
@@ -95,8 +93,7 @@ if st.session_state.solution_generated:
         if user_edits:
             with st.spinner("Applying requested edit while preserving full slide deck structure..."):
                 try:
-                    clean_api_key = api_key.strip()
-                    genai.configure(api_key=clean_api_key)
+                    client = genai.Client(api_key=api_key.strip())
                     
                     edit_prompt = f"""
                     You are a senior consulting editor. Update the following slide deck based on the user's specific feedback.
@@ -113,12 +110,10 @@ if st.session_state.solution_generated:
                     "{user_edits}"
                     """
                     
-                    try:
-                        model = genai.GenerativeModel('models/gemini-1.5-flash')
-                        updated_response = model.generate_content(edit_prompt)
-                    except Exception:
-                        model = genai.GenerativeModel('models/gemini-1.5-pro')
-                        updated_response = model.generate_content(edit_prompt)
+                    updated_response = client.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=edit_prompt,
+                    )
                     
                     st.session_state.full_solution = updated_response.text
                     st.success("✅ Solution updated in English while preserving structure!")
@@ -147,4 +142,4 @@ if st.session_state.solution_generated:
                 data=st.session_state.excel_data,
                 file_name="Rakiza_Case_Processed_Data.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
+            )z
