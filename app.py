@@ -64,7 +64,7 @@ if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
             Format: Output each slide with a clear Header (e.g., "Slide X: Title"), Bullet Points, Key Figures, Data Sources, and Strategic Rationale.
             """
             
-            model = genai.GenerativeModel('gemini-1.5-pro')
+            model = genai.GenerativeModel('gemini-2.5-flash')
             response = model.generate_content(prompt)
             
             st.session_state.full_solution = response.text
@@ -104,7 +104,7 @@ if st.session_state.solution_generated:
                 "{user_edits}"
                 """
                 
-                model = genai.GenerativeModel('gemini-1.5-pro')
+                model = genai.GenerativeModel('gemini-2.5-flash')
                 updated_response = model.generate_content(edit_prompt)
                 
                 st.session_state.full_solution = updated_response.text
