@@ -31,6 +31,38 @@ def create_pdf(text_content):
     
     return bytes(pdf.output())
 
+# Helper Function: Get Active Working Model Automatically
+def get_working_model(api_key):
+    genai.configure(api_key=api_key.strip())
+    
+    # قائمة بأسماء الموديلات الشائعة للتجربة
+    candidates = [
+        'gemini-1.5-flash',
+        'gemini-1.5-pro',
+        'gemini-1.0-pro',
+        'models/gemini-1.5-flash',
+        'models/gemini-1.5-pro'
+    ]
+    
+    # فحص الموديلات المتاحة في API Key الخاص بك
+    try:
+        available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        for m in available_models:
+            if 'flash' in m or 'pro' in m:
+                return genai.GenerativeModel(m)
+    except Exception:
+        pass
+
+    # تجربة القائمة الاحتياطية
+    for model_name in candidates:
+        try:
+            m = genai.GenerativeModel(model_name)
+            return m
+        except Exception:
+            continue
+            
+    raise Exception("لم نتمكن من الوصول للموديل، تأكدي من صحة الـ API Key الخاص بك.")
+
 # Sidebar Inputs
 st.sidebar.header("⚙️ 1. File Inputs & Settings")
 
@@ -48,9 +80,8 @@ if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
     else:
         with st.spinner("Analyzing data exhibits, applying Q&A rules, and generating full English solution..."):
             try:
-                # Configure Official API Key
-                genai.configure(api_key=api_key.strip())
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                # Get working model automatically
+                model = get_working_model(api_key)
                 
                 # Read Excel File Exhibits
                 xls = pd.ExcelFile(uploaded_excel)
@@ -104,8 +135,7 @@ if st.session_state.solution_generated:
         if user_edits:
             with st.spinner("Applying requested edit while preserving full slide deck structure..."):
                 try:
-                    genai.configure(api_key=api_key.strip())
-                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    model = get_working_model(api_key)
                     
                     edit_prompt = f"""
                     You are a senior consulting editor. Update the following slide deck based on the user's specific feedback.
