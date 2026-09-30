@@ -30,7 +30,7 @@ api_key = st.sidebar.text_input("Gemini API Key:", type="password")
 
 # Process & Generate Solution
 if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
-if not uploaded_excel or not uploaded_pdf or not api_key:
+    if not uploaded_excel or not uploaded_pdf or not api_key:
 st.error("⚠️ Please upload both Excel data and PDF instructions, and provide a valid Gemini API Key!")
 else:
 with st.spinner("Analyzing data exhibits, applying Q&A rules, and generating full English solution..."):
