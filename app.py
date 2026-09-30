@@ -142,4 +142,4 @@ if st.session_state.solution_generated:
                 data=st.session_state.excel_data,
                 file_name="Rakiza_Case_Processed_Data.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )z
+            )
