@@ -78,7 +78,7 @@ if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
                 Format: Output each slide with a clear Header (e.g., "Slide X: Title"), Bullet Points, Key Figures, Data Sources, and Strategic Rationale.
                 """
                 
-                # Dynamic Fallback to prevent 503 errors
+                # Retry using supported model
                 try:
                     response = client.models.generate_content(
                         model='gemini-2.5-flash',
@@ -86,7 +86,7 @@ if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
                     )
                 except Exception:
                     response = client.models.generate_content(
-                        model='gemini-1.5-flash',
+                        model='gemini-2.5-flash',
                         contents=prompt,
                     )
                 
@@ -136,7 +136,7 @@ if st.session_state.solution_generated:
                         )
                     except Exception:
                         updated_response = client.models.generate_content(
-                            model='gemini-1.5-flash',
+                            model='gemini-2.5-flash',
                             contents=edit_prompt,
                         )
                     
