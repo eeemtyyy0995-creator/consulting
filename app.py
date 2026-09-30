@@ -18,6 +18,19 @@ if 'full_solution' not in st.session_state:
 if 'excel_data' not in st.session_state:
     st.session_state.excel_data = None
 
+# Helper Function: Create PDF File
+def create_pdf(text_content):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.set_font("Helvetica", size=11)
+    
+    for line in text_content.split('\n'):
+        clean_line = line.encode('latin-1', 'replace').decode('latin-1')
+        pdf.multi_cell(0, 8, txt=clean_line)
+    
+    return bytes(pdf.output())
+
 # Sidebar Inputs
 st.sidebar.header("⚙️ 1. File Inputs & Settings")
 
@@ -35,7 +48,6 @@ if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
     else:
         with st.spinner("Analyzing data exhibits, applying Q&A rules, and generating full English solution..."):
             try:
-                # Initialize official Client
                 client = genai.Client(api_key=api_key.strip())
                 
                 # Read Excel File Exhibits
@@ -66,11 +78,17 @@ if st.sidebar.button("🚀 Generate Full English Case Solution (100%)"):
                 Format: Output each slide with a clear Header (e.g., "Slide X: Title"), Bullet Points, Key Figures, Data Sources, and Strategic Rationale.
                 """
                 
-                # Call Gemini API with updated model
-                response = client.models.generate_content(
-                    model='gemini-3.8-flash',
-                    contents=prompt,
-                )
+                # Dynamic Fallback to prevent 503 errors
+                try:
+                    response = client.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=prompt,
+                    )
+                except Exception:
+                    response = client.models.generate_content(
+                        model='gemini-1.5-flash',
+                        contents=prompt,
+                    )
                 
                 st.session_state.full_solution = response.text
                 st.session_state.solution_generated = True
@@ -111,10 +129,16 @@ if st.session_state.solution_generated:
                     "{user_edits}"
                     """
                     
-                    updated_response = client.models.generate_content(
-                        model='gemini-3.8-flash',
-                        contents=edit_prompt,
-                    )
+                    try:
+                        updated_response = client.models.generate_content(
+                            model='gemini-2.5-flash',
+                            contents=edit_prompt,
+                        )
+                    except Exception:
+                        updated_response = client.models.generate_content(
+                            model='gemini-1.5-flash',
+                            contents=edit_prompt,
+                        )
                     
                     st.session_state.full_solution = updated_response.text
                     st.success("✅ Solution updated in English while preserving structure!")
@@ -122,21 +146,9 @@ if st.session_state.solution_generated:
                 except Exception as e:
                     st.error(f"❌ Error occurred: {str(e)}")
 
-   # Download Section
+# Download Section
 st.markdown("---")
 st.subheader("📥 Export Final Deliverables")
-
-def create_pdf(text_content):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.set_font("Helvetica", size=11)
-    
-    for line in text_content.split('\n'):
-        clean_line = line.encode('latin-1', 'replace').decode('latin-1')
-        pdf.multi_cell(0, 8, txt=clean_line)
-    
-    return bytes(pdf.output())
 
 if st.session_state.solution_generated:
     pdf_bytes = create_pdf(st.session_state.full_solution)
